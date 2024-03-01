@@ -1,3 +1,6 @@
 env
 Constants.py
 .~lock.*
+__pycache__
+~$*
+messages.json
