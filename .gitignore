@@ -4,3 +4,4 @@ Constants.py
 __pycache__
 ~$*
 messages.json
+secrets.toml

@@ -1,5 +1,5 @@
 from openai import OpenAI
-from Constants import *
+import streamlit as st
 from chromadb import PersistentClient
 from create_chroma import openai_embedding
 
@@ -14,7 +14,7 @@ permitida como una práctica, procedimiento, maniobra o trato adecuado.
 """
 
 client = OpenAI(
-    api_key=OPENAI_API_KEY
+    api_key=st.secrets["OPENAI_API_KEY"]
 )
 
 chroma_client = PersistentClient('chroma')
