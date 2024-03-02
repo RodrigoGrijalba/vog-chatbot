@@ -1,7 +1,9 @@
 from openai import OpenAI
 import streamlit as st
-from chromadb import PersistentClient
-from create_chroma import openai_embedding
+from pinecone import Pinecone
+
+INDEX_NAME = "vo-normas"
+EMBEDDING_MODEL = "text-embedding-3-small"
 
 classification_prompt = """
 Eres un gineco obstetra calificado que cuenta con experiencia \
@@ -14,33 +16,38 @@ permitida como una práctica, procedimiento, maniobra o trato adecuado.
 """
 
 client = OpenAI(
-    api_key=st.secrets["OPENAI_API_KEY"]
+        api_key=st.secrets["OPENAI_API_KEY"]
 )
 
-chroma_client = PersistentClient('chroma')
-collection = chroma_client.get_collection(
-    name='vo-normas',
-    embedding_function=openai_embedding
-)
+pinecone_client = Pinecone(api_key=st.secrets["PINECONE_API_KEY"])
+index = pinecone_client.Index(INDEX_NAME)
 
+def get_relevant_documents(query):
+        query_embedding_response = client.embeddings.create(
+                input=query,
+                model=EMBEDDING_MODEL
+        )
+        query_embedding = query_embedding_response.data[0].embedding
+        relevant_documents = index.query(
+                vector=query_embedding, 
+                top_k=1, 
+                include_metadata=True
+        )
+        return relevant_documents["matches"][0]["metadata"]["text"]
 
 def process_query(query, n_results = 1):
-    relevant_document = collection.query(
-        query_texts=[query],
-        n_results=n_results
-    )['documents'][0][0]
-    query_with_context = f'####{query}####\nInformación: {relevant_document}'
-    return query_with_context
+        relevant_document = get_relevant_documents(query)
+        query_with_context = f'####{query}####\nInformación: {relevant_document}'
+        return query_with_context
 
 def generate_response(query, messages):
-    context_query = process_query(query)
-    classifications = []
-    messages += [{'role': 'user', 'content': query}]
-    messages_with_context = messages + [{'role': 'user', 'content': context_query}]
-    response = client.chat.completions.create(
-        messages=messages_with_context,
-        model='gpt-3.5-turbo'
-    ).choices[0].message.content
-    messages += [{'role': 'assistant', 'content': response}]
-    return messages
+        context_query = process_query(query)
+        messages += [{'role': 'user', 'content': query}]
+        messages_with_context = messages + [{'role': 'user', 'content': context_query}]
+        response = client.chat.completions.create(
+                messages=messages_with_context,
+                model='gpt-3.5-turbo'
+        ).choices[0].message.content
+        messages += [{'role': 'assistant', 'content': response}]
+        return messages
 
