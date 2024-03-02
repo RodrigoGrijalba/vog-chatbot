@@ -1,6 +1,5 @@
 import openai
 import streamlit as st
-from dotenv import load_dotenv
 import os
 from html_template import *
 from generate_response import classification_prompt, generate_response
