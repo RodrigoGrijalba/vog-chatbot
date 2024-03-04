@@ -1,7 +1,7 @@
 from openai import OpenAI
-from Constants import *
+import streamlit as st
 from chromadb import PersistentClient
-from create_chroma import openai_embedding
+from chatbot.vector_store import openai_embedding
 
 classification_prompt = """
 Eres un gineco obstetra calificado que cuenta con experiencia \
@@ -14,7 +14,7 @@ permitida como una práctica, procedimiento, maniobra o trato adecuado.
 """
 
 client = OpenAI(
-    api_key=OPENAI_API_KEY
+    api_key=st.secrets["OPENAI_API_KEY"]
 )
 
 chroma_client = PersistentClient('chroma')

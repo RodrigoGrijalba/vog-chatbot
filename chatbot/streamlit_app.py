@@ -5,6 +5,7 @@ import os
 from html_template import *
 from generate_response import classification_prompt, generate_response
 
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 def response_from_query():
