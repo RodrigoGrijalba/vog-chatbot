@@ -6,12 +6,22 @@ import json
 import tiktoken
 from Constants import *
 from uuid import uuid4
+import pandas as pd
 
-DATA_PATH = "../datos"
+DATA_PATH = "../datos/docs"
+METADATA_PATH = "../datos"
+METADATA_FIELDS = {
+        "title": "TÍTULO",
+        "author": "ENTIDAD",
+        "year": "AÑO",
+        "url": "ENLACE"
+}
 tokenizer = tiktoken.get_encoding("cl100k_base")
 EMBEDDING_MODEL = "text-embedding-3-small"
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 ENCODING_FORMAT = "utf-8-sig"
+metadata = pd.read_csv(f"{METADATA_PATH}/readables_metadata.csv")
+
 
 def token_counter(text):
     return len(tokenizer.encode(text))
@@ -36,7 +46,8 @@ def entries_from_path(path):
         document_file_name = path.split("/")[-1]
         document = PdfReader(path)
         document_text = document_to_text(document)
-        document_metadata = {"source": document_file_name}
+        path_metadata_row = metadata[metadata.NOMBRE_ARCHIVO == document_file_name]
+        document_metadata = {key: str(path_metadata_row[METADATA_FIELDS[key]].values[0]) for key in METADATA_FIELDS.keys()}
         return {"text": document_text, "metadata": document_metadata}
 
 def join_embeddings_chunks(chunks, embeddings):
@@ -62,7 +73,7 @@ def embeddings_from_chunks(chunks):
 
 def main():
         doc_paths = os.listdir(DATA_PATH)
-        doc_paths = [f"{DATA_PATH}/{doc}" for doc in doc_paths if doc != ".ipynb_checkpoints"]
+        doc_paths = [f"{DATA_PATH}/{doc}" for doc in doc_paths]
         print("Reading documents...")
         corpus_texts = [entries_from_path(path) for path in doc_paths]
         chunks = text_splitter.create_documents(

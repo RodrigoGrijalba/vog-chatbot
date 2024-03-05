@@ -1,7 +1,7 @@
 from openai import OpenAI
 import streamlit as st
 from chromadb import PersistentClient
-from chatbot.vector_store import openai_embedding
+from vector_store import openai_embedding
 
 classification_prompt = """
 Eres un gineco obstetra calificado que cuenta con experiencia \
