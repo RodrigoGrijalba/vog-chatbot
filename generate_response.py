@@ -12,8 +12,22 @@ usuario puede ser considerado un caso de violencia obstétrica. Para esto, \
 se te proveerá de información sobre la normativa vigente para la práctica \
 gineco-obstétrica. Utiliza únicamente esta información para determinar si \
 el testimonio representa un caso de violencia. En caso se trate de un \
-caso, utiliza la información provista para presentar las razones por qué.
+caso, utiliza la información provista para presentar las razones por qué. \
+Para cada texto de información provisto, se proveerá también el título del \
+documento, el autor, el año, y el URL para acceder al documento. Al \
+justificar tu respuesta, apóyate únicamente de la información y menciona el \
+título, autor, año y URL del documento.
+
 En tu respuesta, mantén un tono amigable, cálido, y empático.
+"""
+
+CONTEXT_TEMPLATE = """
+Información: {text}
+
+Título: {title}
+Autor: {author}
+Año: {year}
+URL: {url}
 """
 
 client = OpenAI(
@@ -34,10 +48,17 @@ def get_relevant_documents(query):
                 top_k=1, 
                 include_metadata=True
         )
-        return relevant_documents["matches"][0]["metadata"]["text"]
+        return relevant_documents["matches"][0]["metadata"]
 
 def process_query(query, n_results = 1):
         relevant_document = get_relevant_documents(query)
+        context = CONTEXT_TEMPLATE.format(
+                text=relevant_document["text"],
+                title=relevant_document["title"],
+                author=relevant_document["author"],
+                year=relevant_document["year"],
+                url=relevant_document["url"]
+        )
         query_with_context = f'####{query}####\nInformación: {relevant_document}'
         return query_with_context
 
