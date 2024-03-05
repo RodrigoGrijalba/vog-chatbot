@@ -4,3 +4,4 @@ pypdf
 pinecone-client
 langchain
 streamlit
+supabase
