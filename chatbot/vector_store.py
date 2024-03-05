@@ -4,13 +4,14 @@ import os
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from Constants import *
 from pinecone import Pinecone, PodSpec
-from openai import OpenAI, embeddings
+from openai import OpenAI
 from create_embeddings import ENCODING_FORMAT
 import json
 import itertools
 
 BATCH_SIZE = 50
 openai_client = OpenAI(api_key = OPENAI_API_KEY)
+INDEX_NAME = "vo-normas"
 
 def batches_generator(vectors, batch_size):
         iterable_vectors = iter(vectors)
@@ -28,18 +29,18 @@ def main():
         pinecone_client = Pinecone(api_key=PINECONE_API_KEY)
 
         print("Creating Index")
-        if "vo-normas" in pinecone_client.list_indexes().names():
-                pinecone_client.delete_index("vo-normas")
+        if INDEX_NAME in pinecone_client.list_indexes().names():
+                pinecone_client.delete_index(INDEX_NAME)
                 
         pinecone_client.create_index(
-                name="vo-normas",
+                name=INDEX_NAME,
                 dimension=1536,
                 metric="dotproduct",
                 spec=PodSpec(
                 environment="gcp-starter"
                 )
         )
-        index = pinecone_client.Index("vo-normas")
+        index = pinecone_client.Index(INDEX_NAME)
 
         print("Upserting Vectors")
         for vectors_batches in batches_generator(vectors, BATCH_SIZE):
