@@ -9,6 +9,7 @@ import uuid
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 openai.api_key = os.getenv('OPENAI_API_KEY')
 DATABASE_NAME = "vog-chatbot"
+BOT_INTRODUCTION = "Hola, soy Illa, encantada de conocerte. Estoy aquí para ayudarte"
 
 supabase: Client = create_client(
     st.secrets["SUPABASE_URL"],
@@ -23,18 +24,13 @@ def insert_data(uuid, message, table = DATABASE_NAME):
 def session_id():
     return str(uuid.uuid4())
 
-def clear_text_box():
-    st.session_state.temp = st.session_state.prompt
-    st.session_state.prompt = ""
-
 def response_from_query():
-    clear_text_box()
-    if st.session_state.temp == "":
+    if st.session_state.prompt == "":
         return
     
     messages = st.session_state.history
 
-    messages = generate_response(st.session_state.temp, messages)
+    messages = generate_response(st.session_state.prompt, messages)
     st.session_state.history = messages
     insert_data(st.session_state.session_id, messages[-2]).execute()
     insert_data(st.session_state.session_id, messages[-1]).execute()
@@ -47,9 +43,8 @@ def main():
         
     if "history" not in st.session_state:
         st.session_state.history = [{'role': 'system', 'content': classification_prompt}]
-    
-    if "temp" not in st.session_state:
-        st.session_state.temp = ""
+
+    st.write(bot_msg_container_html_template.replace("$MSG", BOT_INTRODUCTION), unsafe_allow_html=True)
     
     for message in st.session_state.history:
         if message["role"] == 'user':
@@ -57,12 +52,10 @@ def main():
         elif message['role'] == 'assistant':
             st.write(bot_msg_container_html_template.replace("$MSG", message["content"]), unsafe_allow_html=True)
     
-    st.text_area(
-        "Hola, soy Illa. Encantada de conocerte. Estoy aquí para ayudarte", 
-        value="",
+    st.chat_input(
         key="prompt", 
         placeholder="Cuéntame qué te sucedió durante la atención obstétrica o ginecológica", 
-        on_change=response_from_query
+        on_submit=response_from_query
     )
 
 if __name__ == "__main__":
