@@ -23,16 +23,22 @@ def insert_data(uuid, message, table = DATABASE_NAME):
 def session_id():
     return str(uuid.uuid4())
 
+def clear_text_box():
+    st.session_state.temp = st.session_state.prompt
+    st.session_state.prompt = ""
+
 def response_from_query():
-    if st.session_state.prompt == "":
+    clear_text_box()
+    if st.session_state.temp == "":
         return
     
     messages = st.session_state.history
 
-    messages = generate_response(st.session_state.prompt, messages)
+    messages = generate_response(st.session_state.temp, messages)
     st.session_state.history = messages
     insert_data(st.session_state.session_id, messages[-2]).execute()
     insert_data(st.session_state.session_id, messages[-1]).execute()
+
 
 def main():
 
@@ -42,16 +48,20 @@ def main():
     if "history" not in st.session_state:
         st.session_state.history = [{'role': 'system', 'content': classification_prompt}]
     
+    if "temp" not in st.session_state:
+        st.session_state.temp = ""
+    
     for message in st.session_state.history:
         if message["role"] == 'user':
             st.write(user_msg_container_html_template.replace("$MSG", message["content"]), unsafe_allow_html=True)
         elif message['role'] == 'assistant':
             st.write(bot_msg_container_html_template.replace("$MSG", message["content"]), unsafe_allow_html=True)
     
-    st.text_input(
-        "Consulta al asistente virtual:", 
+    st.text_area(
+        "Hola, soy Illa. Encantada de conocerte. Estoy aquí para ayudarte", 
+        value="",
         key="prompt", 
-        placeholder="Menciónenos qué ha sucedido durante la atención obstétrica o ginecológica", 
+        placeholder="Cuéntame qué te sucedió durante la atención obstétrica o ginecológica", 
         on_change=response_from_query
     )
 
