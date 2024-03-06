@@ -51,7 +51,7 @@ def main():
     st.text_input(
         "Consulta al asistente virtual:", 
         key="prompt", 
-        placeholder="ej.: Menciónenos qué ha sucedido durante la ateción obstétrica", 
+        placeholder="Menciónenos qué ha sucedido durante la atención obstétrica o ginecológica", 
         on_change=response_from_query
     )
 
