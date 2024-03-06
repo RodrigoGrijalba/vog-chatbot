@@ -9,7 +9,7 @@ import uuid
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 openai.api_key = os.getenv('OPENAI_API_KEY')
 DATABASE_NAME = "vog-chatbot"
-BOT_INTRODUCTION = "Hola, soy Illa, encantada de conocerte. Estoy aquí para ayudarte"
+BOT_INTRODUCTION = "Hola, soy Illa, encantada de conocerte. Estoy aquí para orientarte"
 
 supabase: Client = create_client(
     st.secrets["SUPABASE_URL"],
