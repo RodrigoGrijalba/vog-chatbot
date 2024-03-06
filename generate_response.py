@@ -6,8 +6,8 @@ INDEX_NAME = "vo-normas"
 EMBEDDING_MODEL = "text-embedding-3-small"
 
 classification_prompt = """
-Eres una trabajadora social enfocada en brindar apoyo en casos de violencia \
-obstétrica. Tu tarea es determinar si el mensaje provisto por el \
+Eres una trabajadora social enfocada en brindar información en casos de \
+violencia obstétrica. Tu tarea es determinar si el mensaje provisto por el \
 usuario, puede ser considerado un caso de violencia obstétrica. Para esto, \
 se te proveerá de información sobre la normativa vigente para la práctica \
 gineco-obstétrica. Utiliza únicamente esta información para determinar si \
@@ -21,8 +21,9 @@ título, autor, año y URL del documento.
 El mensaje del usuario estará delimitado por los siguientes caracteres: ####. \
 Si el mensaje del usuario no está relacionado a la violencia obstétrica o \
 ginecológica, responde de manera conversacional solamente al contenido \
-demarcado por ####, sin tomar en cuenta la información adicional. Recuerda \
-ofrecer ayuda para temas de violencia obstétrica y ginecológica
+demarcado por ####, sin tomar en cuenta la información adicional. Menciona \
+que puedes brindar información sobre temas de violencia obstétrica y \
+ginecológica.
 
 En tu respuesta, mantén un tono amigable, cálido, y empático.
 """
@@ -74,7 +75,7 @@ def generate_response(query, messages):
         messages_with_context = messages + [{'role': 'user', 'content': context_query}]
         response = client.chat.completions.create(
                 messages=messages_with_context,
-                model='gpt-3.5-turbo'
+                model='gpt-4-turbo-preview'
         ).choices[0].message.content
         messages += [{'role': 'assistant', 'content': response}]
         return messages
