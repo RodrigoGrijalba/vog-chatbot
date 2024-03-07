@@ -75,8 +75,8 @@ def generate_response(query, messages):
         messages_with_context = messages + [{'role': 'user', 'content': context_query}]
         response = client.chat.completions.create(
                 messages=messages_with_context,
-                model='gpt-4-turbo-preview'
-        ).choices[0].message.content
-        messages += [{'role': 'assistant', 'content': response}]
-        return messages
+                model='gpt-4-turbo-preview',
+                stream=True
+        )
+        return messages, response
 
