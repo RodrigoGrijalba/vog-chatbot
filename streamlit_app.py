@@ -5,6 +5,7 @@ from html_template import *
 from generate_response import classification_prompt, generate_response
 from supabase import create_client, Client
 import uuid
+import time
 
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -24,17 +25,38 @@ def insert_data(uuid, message, table = DATABASE_NAME):
 def session_id():
     return str(uuid.uuid4())
 
+def write_message(message):
+    if message["role"] == "user":
+        with st.chat_message("user", avatar=USER_AVATAR):
+            st.write(message["content"])
+    elif message["role"] == "assistant":
+        with st.chat_message("user", avatar=BOT_AVATAR):
+            st.markdown(message["content"])
+
 def response_from_query():
     if st.session_state.prompt == "":
         return
-    
+
+    for message in st.session_state.history:
+        write_message(message)
+
+    with st.chat_message("user", avatar=USER_AVATAR):
+        st.write(st.session_state.prompt)
     messages = st.session_state.history
 
-    messages = generate_response(st.session_state.prompt, messages)
+    messages, response = generate_response(st.session_state.prompt, messages)
     st.session_state.history = messages
+
+    with st.chat_message("assistant", avatar=BOT_AVATAR):
+        assistant_message = st.write_stream(response)
+    
+    st.session_state.history.append(
+        {"role": "assistant", "content": assistant_message}
+    )
+    messages = st.session_state.history
+
     insert_data(st.session_state.session_id, messages[-2]).execute()
     insert_data(st.session_state.session_id, messages[-1]).execute()
-
 
 def main():
 
@@ -44,19 +66,17 @@ def main():
     if "history" not in st.session_state:
         st.session_state.history = [{'role': 'system', 'content': classification_prompt}]
 
-    st.write(bot_msg_container_html_template.replace("$MSG", BOT_INTRODUCTION), unsafe_allow_html=True)
+    if "stream" not in st.session_state:
+        st.session_state.stream = None
     
-    for message in st.session_state.history:
-        if message["role"] == 'user':
-            st.write(user_msg_container_html_template.replace("$MSG", message["content"]), unsafe_allow_html=True)
-        elif message['role'] == 'assistant':
-            st.write(bot_msg_container_html_template.replace("$MSG", message["content"]), unsafe_allow_html=True)
+    with st.chat_message("assistant", avatar=BOT_AVATAR):
+        st.write(BOT_INTRODUCTION)
     
-    st.chat_input(
+    if prompt := st.chat_input(
         key="prompt", 
-        placeholder="Cuéntame qué te sucedió durante la atención obstétrica o ginecológica", 
-        on_submit=response_from_query
-    )
+        placeholder="Cuéntame qué te sucedió durante la atención obstétrica o ginecológica"
+    ):
+        response_from_query()
 
 if __name__ == "__main__":
     main()
