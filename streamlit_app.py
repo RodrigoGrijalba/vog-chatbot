@@ -6,16 +6,18 @@ from generate_response import classification_prompt, generate_response
 from supabase import create_client, Client
 import uuid
 import time
+from env_type import production
 
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 openai.api_key = os.getenv('OPENAI_API_KEY')
 DATABASE_NAME = "vog-chatbot"
 BOT_INTRODUCTION = "Hola, soy Illa, encantada de conocerte. Estoy aquí para orientarte"
 
-supabase: Client = create_client(
+if production:
+    supabase: Client = create_client(
     st.secrets["SUPABASE_URL"],
     st.secrets["SUPABASE_KEY"]
-)
+    )
 
 def insert_data(uuid, message, table = DATABASE_NAME):
     data = {"uuid": uuid, "role": message["role"], "content": message["content"]}
@@ -54,9 +56,9 @@ def response_from_query():
         {"role": "assistant", "content": assistant_message}
     )
     messages = st.session_state.history
-
-    insert_data(st.session_state.session_id, messages[-2]).execute()
-    insert_data(st.session_state.session_id, messages[-1]).execute()
+    if production:
+        insert_data(st.session_state.session_id, messages[-2]).execute()
+        insert_data(st.session_state.session_id, messages[-1]).execute()
 
 def main():
 
