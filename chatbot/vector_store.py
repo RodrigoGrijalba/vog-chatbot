@@ -11,7 +11,7 @@ import itertools
 
 BATCH_SIZE = 50
 openai_client = OpenAI(api_key = OPENAI_API_KEY)
-INDEX_NAME = "vo-normas"
+INDEX_NAME = "vo-normas-2"
 
 def batches_generator(vectors, batch_size):
         iterable_vectors = iter(vectors)
