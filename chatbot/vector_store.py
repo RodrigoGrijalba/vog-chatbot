@@ -3,7 +3,7 @@ import tiktoken
 import os
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from Constants import *
-from pinecone import Pinecone, PodSpec
+from pinecone import Pinecone, ServerlessSpec
 from openai import OpenAI
 from create_embeddings import ENCODING_FORMAT
 import json
@@ -36,8 +36,9 @@ def main():
                 name=INDEX_NAME,
                 dimension=1536,
                 metric="dotproduct",
-                spec=PodSpec(
-                environment="gcp-starter"
+                spec=ServerlessSpec(
+                        cloud="aws",
+                        region="us-east-1"
                 )
         )
         index = pinecone_client.Index(INDEX_NAME)
