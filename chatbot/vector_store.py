@@ -3,7 +3,7 @@ import tiktoken
 import os
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from Constants import *
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Pinecone, PodSpec
 from openai import OpenAI
 from create_embeddings import ENCODING_FORMAT
 import json
@@ -20,7 +20,6 @@ def batches_generator(vectors, batch_size):
                 yield batch
                 batch = tuple(itertools.islice(iterable_vectors, batch_size))
 
-
 def main():
         print("Loading Vectors")
         with open("embeddings.json", "r", encoding=ENCODING_FORMAT) as f:
@@ -36,9 +35,8 @@ def main():
                 name=INDEX_NAME,
                 dimension=1536,
                 metric="dotproduct",
-                spec=ServerlessSpec(
-                        cloud="aws",
-                        region="us-east-1"
+                spec=PodSpec(
+                        environment="gcp-starter"
                 )
         )
         index = pinecone_client.Index(INDEX_NAME)
@@ -47,9 +45,7 @@ def main():
         for vectors_batches in batches_generator(vectors, BATCH_SIZE):
                 index.upsert(
                         vectors=list(vectors_batches)
-                )
-    
-    
+                )    
 
 if __name__ == '__main__':
         main()
