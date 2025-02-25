@@ -1,7 +1,7 @@
 openai
 tiktoken
 pypdf
-pinecone-client
+pinecone
 langchain
 streamlit
 supabase
