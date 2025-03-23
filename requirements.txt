@@ -1,7 +1,7 @@
-openai==1.68
-tiktoken==0.9
+openai==1.68.*
+tiktoken==0.9.*
 pypdf
-pinecone==6.0
+pinecone==6.0.*
 langchain
 streamlit
 supabase
